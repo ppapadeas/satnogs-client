@@ -14,12 +14,18 @@ from satnogsclient.observer.orbital import pinpoint
 class Worker:
     """Class to facilitate as a worker for rotctl/rigctl."""
 
-    # socket to connect to
-    _IP = None
-    _PORT = None
+    # sockets to connect to
+    _ROT_IP = None
+    _ROT_PORT = None
+
+    _RIG_IP = None
+    _RIG_PORT = None
 
     # sleep time of loop
     SLEEP_TIME = 0.1  # in seconds
+
+    # refresh tracking info every n loops
+    REFRESH_TRACKING_INTERVAL = 10
 
     # loop flag
     _stay_alive = False
@@ -36,11 +42,15 @@ class Worker:
     observer_dict = {}
     satellite_dict = {}
 
-    def __init__(self, ip=None, port=None, frequency=None, time_to_stop=None):
-        if ip:
-            self._IP = ip
-        if port:
-            self._PORT = port
+    def __init__(self, rotip=None, rotport=None, rigip=None, rigport=None, frequency=None, time_to_stop=None):
+        if rotip:
+            self._ROT_IP = rotip
+        if rotport:
+            self._ROT_PORT = rotport
+        if rigip:
+            self._RIG_IP = rigip
+        if rigport:
+            self._RIG_PORT = rigport
         if frequency:
             self._frequency = frequency
         if time_to_stop:
@@ -60,7 +70,7 @@ class Worker:
 
     def trackstart(self):
         """
-        Starts the thread that communicates tracking info to remote socket.
+        Starts the thread that communicates info to remote sockets.
         Stops by calling trackstop()
         """
         self._stay_alive = True
@@ -74,10 +84,6 @@ class Worker:
 
         return True
 
-    def send_to_socket(self):
-        # Need to be implemented in freq/track workers implicitly
-        pass
-
     def _communicate_tracking_info(self):
         """
         Runs as a daemon thread, communicating tracking info to remote socket.
@@ -89,6 +95,8 @@ class Worker:
         else:
             sock = Commsocket()
             sock.connect(self._IP, self._PORT)  # change to correct address
+
+        loop_count = 0
 
         # track satellite
         while self._stay_alive:
@@ -102,7 +110,11 @@ class Worker:
             else:
                 p = pinpoint(self.observer_dict, self.satellite_dict)
                 if p['ok']:
-                    self.send_to_socket(p, sock)
+                    self.send_to_socket_rig(p, sock)
+                    loop_count += 1
+                    if loop_count >= self.REFRESH_TRACKING_INTERVAL:
+                        self.send_to_socket_rot(p, sock)
+                        loop_count = 0
                     time.sleep(self.SLEEP_TIME)
 
         if self._debugmode:
@@ -114,27 +126,20 @@ class Worker:
         """ Sets object flag to false and stops the tracking thread.
         """
         self._stay_alive = False
+        ## Need to stop receiver instance from here.
+        ## Suggestion: pass receiver object to init and keep it as a reference
+        ## so we can call receiver.stop() directly
 
     def check_observation_end_reached(self):
         if datetime.now(pytz.utc) > self._observation_end:
             self.trackstop()
 
-
-class WorkerTrack(Worker):
-    _IP = settings.ROT_IP
-    _PORT = settings.ROT_PORT
-
-    def send_to_socket(self, p, sock):
+    def send_to_socket_rot(self, p, sock):
         az = p['az'].conjugate()
         alt = p['alt'].conjugate()
         msg = 'P {0} {1}\n'.format(az, alt)
         sock.send(msg)
 
-
-class WorkerFreq(Worker):
-    _IP = settings.RIG_IP
-    _PORT = settings.RIG_PORT
-
-    def send_to_socket(self, p, sock):
+    def send_to_socket_rig(self, p, sock):
         msg = 'F{0}\n'.format(self._frequency)
         sock.send(msg)
