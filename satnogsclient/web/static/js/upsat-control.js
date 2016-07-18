@@ -659,6 +659,8 @@ function print_command_response(data) {
     for(var key in data) {
         var resp = data[key];
 
+        var log_data = "";
+
         if (resp.id == 1) {
             data_type = 'cmd';
             log_data = resp.log_message;
@@ -673,6 +675,7 @@ function print_command_response(data) {
               request = encode_mode_switch(current_mode);
               query_control_backend(request, 'POST', '/command', "application/json; charset=utf-8", "json", true);
             }
+            log_data = log_data.split("\n").join("<br>");
         }
 
         //Check if log is just hearbeat

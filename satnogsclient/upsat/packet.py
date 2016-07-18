@@ -385,17 +385,18 @@ def ecss_logic(ecss_dict):
             # uart_state = ecss_dict['data'][pointer]
             # pointer += 1
 
-            report += " time " + str(qb50) + " UTC " + str(utc) + \
-                      " obc " + str(obc) + \
-                      " comms " + str(comms) + \
-                      " eps " + str(eps) + \
-                      " adcs " + str(adcs) + \
-                      " task_uart " + str(task_uart) + \
-                      " task_idle " + str(task_idle) + \
-                      " task_hk " + str(task_hk) + \
-                      " task_su " + str(task_su) + \
-                      " task_sch " + str(task_sch) + \
-                      " vbat " + str(vbat)
+            report += " time " + str(qb50) + "\n" + \
+                      " UTC " + str(utc) + "\n" + \
+                      " obc " + str(obc) + "\n" + \
+                      " comms " + str(comms) + "\n" + \
+                      " eps " + str(eps) + "\n" + \
+                      " adcs " + str(adcs) + "\n" + \
+                      " task_uart " + str(task_uart) + "\n" + \
+                      " task_idle " + str(task_idle) + "\n" + \
+                      " task_hk " + str(task_hk) + "\n" + \
+                      " task_su " + str(task_su) + "\n" + \
+                      " task_sch " + str(task_sch) + "\n" + \
+                      " vbat " + str(vbat) + "\n"
 
             # if uart_state == 0x00:
             #     report += " Uart state reset"
@@ -475,7 +476,10 @@ def ecss_logic(ecss_dict):
                     " time_modified: " + str(time_modfied)
                 print "raw ", ' '.join('{:02x}'.format(x) for x in ecss_dict['data'][(offset):(offset + packet_settings.SCRIPT_REPORT_SU_OFFSET)])
 
-                report += "script " + packet_settings.upsat_store_ids[str(i + 1)] + " valid: " + str(valid) + " size: " + str(size) + " time_modified: " + str(time_modfied) + "\n"
+                report += "script " + packet_settings.upsat_store_ids[str(i + 1)] + "\n" + \
+                          "valid: " + str(valid) + "\n" + \
+                          "size: " + str(size) + "\n" + \
+                          "time_modified: " + str(time_modfied) + "\n"
 
             for i in range(0, 4):
 
@@ -497,9 +501,14 @@ def ecss_logic(ecss_dict):
                     " tail time_modfied: " + str(time_modfied_tail) + " head size: " + str(head_size) + " head time_modfied: " + str(time_modfied_head)
                 print "raw ", ' '.join('{:02x}'.format(x) for x in ecss_dict['data'][(offset):(offset + packet_settings.SCRIPT_REPORT_LOGS_OFFSET)])
 
-                report += "script " + packet_settings.upsat_store_ids[str(i + 8)] + " number of files: " + str(fnum) + " tail name: " + str(fname_tail) + " tail size: " + \
-                    str(tail_size) + " tail time_modfied: " + str(time_modfied_tail) + " head name: " + str(fname_head) + " head size: " + str(head_size) + \
-                    " head time_modfied: " + str(time_modfied_head) + "\n"
+                report += "script " + packet_settings.upsat_store_ids[str(i + 8)] + "\n" + \
+                          "number of files: " + str(fnum) + "\n" + \
+                          "tail name: " + str(fname_tail) + "\n" + \
+                          "tail size: " + str(tail_size) + "\n" + \
+                          "tail time_modfied: " + str(time_modfied_tail) + "\n" + \
+                          "head name: " + str(fname_head) + "\n" + \
+                          "head size: " + str(head_size) + "\n" + \
+                          "head time_modfied: " + str(time_modfied_head) + "\n"
 
         elif ecss_dict['ser_subtype'] == packet_settings.TM_MS_CATALOGUE_LIST:
 
@@ -532,7 +541,10 @@ def ecss_logic(ecss_dict):
                     # Ecss_dict['files'][i]['time_modfied'] = time_modfied
                     # Ecss_dict['files'][i]['size'] = size
 
-                    report += " file " + str(i) + " filename " + str(filename) + " size " + str(size) + " modified " + str(time_modfied) + "\n"
+                    report += "file " + str(i) + "\n" + \
+                              "filename " + str(filename) + "\n" + \
+                              "size " + str(size) + "\n" + \
+                              "modified " + str(time_modfied) + "\n"
                 print report
 
             elif sid <= packet_settings.SU_SCRIPT_7:
